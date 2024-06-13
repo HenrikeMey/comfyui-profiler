@@ -7,6 +7,7 @@ import execution
 import asyncio
 
 import server
+import asyncio
 
 _LOG_TIME = True
 try: _LOG_TIME = os.getenv("COMFYUI_PROFILER_LOG_TIME", "true").lower() in ['true', '1']
@@ -24,7 +25,10 @@ profiler_outputs = []
 
 async def send_message(data) -> None:
     s = server.PromptServer.instance
-    await s.send_json('profiler', data)
+    try:
+        await asyncio.wait_for(s.send_json('profiler', data), timeout=5)
+    except asyncio.TimeoutError:
+        print("Timeout occurred while sending message to server.")
 
 def get_input_unique_ids(inputs) -> list:
     ret = []
